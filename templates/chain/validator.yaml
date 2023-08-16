@@ -1,0 +1,230 @@
+{{- range $chain := .Values.chains }}
+{{- if gt $chain.numValidators 1.0 }}
+{{ $dataExposer := dict "chain" $chain.name "port" ($.Values.exposer.port | quote | default "8081") }}
+{{ $defaultChain := get $.Values.defaultChains $chain.type }}
+
+{{ $upgrade := get $chain "upgrade" }}
+{{- if not $upgrade }}
+{{ $upgrade = dict "enabled" false }}
+{{- end }}
+
+{{ $image := $chain.image | default $defaultChain.image }}
+{{- if $upgrade.enabled }}
+{{ $image = "anmol1696/runner:latest" }}
+{{- end }}
+
+{{ $initParams := dict "chains" list $chain.name "port" $.Values.exposer.port }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $chain.name }}-validator
+spec:
+  serviceName: {{ $chain.name }}-validator
+  podManagementPolicy: Parallel
+  replicas: {{ sub $chain.numValidators 1 }}
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ $chain.type }}
+      app.kubernetes.io/name: {{ $chain.name }}-validator
+  template:
+    metadata:
+      annotations:
+        quality: release
+        role: api-gateway
+        sla: high
+        tier: gateway
+      labels:
+        app.kubernetes.io/instance: {{ $chain.type }}
+        app.kubernetes.io/type: {{ $chain.name }}
+        app.kubernetes.io/name: {{ $chain.name }}-validator
+        app.kubernetes.io/version: {{ $.Chart.AppVersion }}
+    spec:
+      initContainers:
+        {{- if $upgrade.enabled }}
+        - name: init-build-images
+          image: anmol1696/builder:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - bash
+            - "-c"
+            - |
+              # Install cosmovisor
+              go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@v1.0.0
+
+              # Build genesis
+              UPGRADE_NAME=genesis CODE_TAG={{ $chain.upgrade.genesis }} bash -e /scripts/build_chain.sh
+              {{- range $upgrade := $chain.upgrade.upgrades }}
+              UPGRADE_NAME={{ $upgrade.name }} CODE_TAG={{ $upgrade.version }} bash -e /scripts/build_chain.sh
+              {{- end }}
+          env:
+            - name: CODE_REF
+              value: "{{ $defaultChain.repo }}"
+            - name: UPGRADE_DIR
+              value: "{{ $defaultChain.home }}/cosmovisor"
+            - name: GOBIN
+              value: "/go/bin"
+            - name: CHAIN_NAME
+              value: "{{ $chain.name }}"
+                    {{ include "devnet.defaultEvnVars" $defaultChain | indent 12 }}
+          volumeMounts:
+            - mountPath: {{ $defaultChain.home }}
+              name: node
+            - mountPath: /configs
+              name: addresses
+            - mountPath: /scripts
+              name: scripts
+        {{- end }}
+        - name: init-validator
+          image: {{ $image }}
+          imagePullPolicy: Always
+          env:
+            {{- include "devnet.defaultEvnVars" $defaultChain | indent 12 }}
+            {{- include "devnet.evnVars" $chain | indent 12 }}
+            {{- include "devnet.timeoutVars" $.Values | indent 12 }}
+            {{- include "devnet.genesisVars" $dataExposer | indent 12 }}
+            - name: KEYS_CONFIG
+              value: "/configs/keys.json"
+          command:
+            - bash
+            - "-c"
+            - |
+              while [ -z "$NODE_ID" ]
+              do 
+                  sleep 2s
+                  NODE_ID=$(curl -s http://$GENESIS_HOST.$NAMESPACE.svc.cluster.local:$GENESIS_PORT/node_id | jq -r ".node_id")
+              done 
+
+              VAL_INDEX=${HOSTNAME##*-}
+              echo "Validator Index: $VAL_INDEX"
+              {{- if $upgrade.enabled }}
+              cp $CHAIN_DIR/cosmovisor/genesis/bin/$CHAIN_BIN /usr/bin
+              {{- end }}
+
+              rm -rf $HOME_DIR
+
+              VAL_NAME=$(jq -r ".validators[$VAL_INDEX].name" $KEYS_CONFIG)
+              echo "Validator Index: $VAL_INDEX, Key name: $VAL_NAME"
+
+              jq -r ".validators[$VAL_INDEX].mnemonic" $KEYS_CONFIG | $CHAIN_BIN init $VAL_NAME --chain-id $CHAIN_ID --recover
+              jq -r ".validators[$VAL_INDEX].mnemonic" $KEYS_CONFIG | $CHAIN_BIN keys add $VAL_NAME --recover --keyring-backend="test"
+
+              curl http://$GENESIS_HOST.$NAMESPACE.svc.cluster.local:$GENESIS_PORT/genesis -o $CHAIN_DIR/config/genesis.json
+              echo "Genesis file that we got....."
+              cat $CHAIN_DIR/config/genesis.json
+
+              echo "Setup config files"
+              bash -e /scripts/setup_config.sh
+
+              GENESIS_NODE_P2P=$NODE_ID@$GENESIS_HOST.$NAMESPACE.svc.cluster.local:26656
+              echo "Node P2P: $GENESIS_NODE_P2P"
+              sed -i "s/persistent_peers = \"\"/persistent_peers = \"$GENESIS_NODE_P2P\"/g" $CHAIN_DIR/config/config.toml
+
+              echo "Printing the whole config.toml file"
+              cat $CHAIN_DIR/config/config.toml
+          resources: {{- include "devnet.init.resources" . | trim | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ $defaultChain.home }}
+              name: node
+            - mountPath: /configs
+              name: addresses
+            - mountPath: /scripts
+              name: scripts
+      containers:
+        - name: validator
+          image: {{ $image }}
+          imagePullPolicy: Always
+          env:
+            {{- include "devnet.defaultEvnVars" $defaultChain | indent 12 }}
+            {{- include "devnet.evnVars" $chain | indent 12 }}
+            {{- include "devnet.genesisVars" $dataExposer | indent 12}}
+            - name: COLLECTOR_SERVICE
+              value: collector
+            - name: COLLECTOR_PORT
+              value: "8070"
+          command:
+            - bash
+            - "-c"
+            - |
+              # Starting the chain
+              {{- if $upgrade.enabled }}
+              cp $CHAIN_DIR/cosmovisor/genesis/bin/$CHAIN_BIN /usr/bin
+              /usr/bin/cosmovisor start
+              {{- else }}
+              $CHAIN_BIN start
+              {{- end }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - bash
+                  - "-c"
+                  - "-e"
+                  - |
+                    VAL_INDEX=${HOSTNAME##*-}
+                    VAL_NAME=$(jq -r ".validators[$VAL_INDEX].name" /configs/keys.json)
+                    echo "Validator Index: $VAL_INDEX, Key name: $VAL_NAME"
+
+                    $CHAIN_BIN keys list | jq
+
+                    VAL_NAME=$VAL_NAME bash -e /scripts/create_validator.sh
+            {{- if $.Values.collector.enabled }}
+            preStop:
+              exec:
+                command:
+                  - bash
+                  - "-c"
+                  - "-e"
+                  - |
+                    VAL_INDEX=${HOSTNAME##*-}
+                    VAL_NAME=$(jq -r ".validators[$VAL_INDEX].name" /configs/keys.json)
+                    echo "Validator Index: $VAL_INDEX, Key name: $VAL_NAME"
+
+                    COLLECTOR_HOST=http://$COLLECTOR_SERVICE.$NAMESPACE.svc.cluster.local:$COLLECTOR_PORT
+                    VAL_NAME=$VAL_NAME COLLECTOR_HOST=$COLLECTOR_HOST bash -e /scripts/register_snapshots.sh
+            {{- end }}
+          resources: {{- include "devnet.validator.resources" $chain | trim | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ $defaultChain.home }}
+              name: node
+            - mountPath: /configs
+              name: addresses
+            - mountPath: /scripts
+              name: scripts
+        - name: exposer
+          image: {{ $.Values.exposer.image }}
+          imagePullPolicy: Always
+          env:
+            {{- include "devnet.defaultEvnVars" $defaultChain | indent 12 }}
+            {{- include "devnet.evnVars" $chain | indent 12 }}
+            {{- include "devnet.genesisVars" $dataExposer | indent 12}}
+            - name: EXPOSER_HTTP_PORT
+              value: "8081"
+            - name: EXPOSER_GRPC_PORT
+              value: "9099"
+            - name: EXPOSER_GENESIS_FILE
+              value: "{{ $defaultChain.home }}/config/genesis.json"
+            - name: EXPOSER_MNEMONIC_FILE
+              value: "/configs/keys.json"
+            - name: EXPOSER_PRIV_VAL_FILE
+              value: "{{ $defaultChain.home }}/config/priv_validator_key.json"
+          command: [ "/app/exposer/exposer" ]
+          resources: {{- toYaml $.Values.exposer.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{ $defaultChain.home }}
+              name: node
+            - mountPath: /configs
+              name: addresses
+      volumes:
+        - name: node
+          emptyDir: { }
+        - name: addresses
+          configMap:
+            name: keys
+        - name: scripts
+          configMap:
+            name: setup-scripts
+---
+{{- end }}
+{{- end }}

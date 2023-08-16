@@ -1,0 +1,113 @@
+{
+  "genesis": [
+    {
+      "name": "val0",
+      "type": "local",
+      "mnemonic": "poverty hybrid achieve oyster supply page under flame target hockey second observe relax satisfy aunt citizen rifle patrol use crush gospel amused swarm rate"
+    }
+  ],
+  "validators": [
+    {
+      "name": "val1",
+      "type": "local",
+      "mnemonic": "issue have volume expire shoe year finish poem alien urban license undo rural endless food host opera fix forum crack wide example firm learn"
+    },
+    {
+      "name": "val2",
+      "type": "local",
+      "mnemonic": "broccoli robot upon blush rabbit squeeze fruit still lady antique detect can spice clay magic monster zebra solution dry salute stay wet arena matrix"
+    },
+    {
+      "name": "val3",
+      "type": "local",
+      "mnemonic": "phone useful scrap dust language pave fresh addict bitter claim whisper correct alter family pepper tape desk review vital merit lemon warfare snack smoke"
+    },
+    {
+      "name": "val4",
+      "type": "local",
+      "mnemonic": "symbol swarm grit glow inhale weasel crop boring meat dust physical salad update isolate vacuum water broccoli swallow student drop regular eye butter win"
+    },
+    {
+      "name": "val5",
+      "type": "local",
+      "mnemonic": "poverty hybrid achieve oyster supply page under flame target hockey second observe relax satisfy aunt citizen rifle patrol use crush gospel amused swarm rate"
+    },
+    {
+      "name": "val6",
+      "type": "local",
+      "mnemonic": "blouse task clinic dumb symbol clean dragon royal theory ill loyal human dream cement brown venture fury wild clog aunt welcome exotic radio diet"
+    },
+    {
+      "name": "val7",
+      "type": "local",
+      "mnemonic": "faculty eagle pause trash punch grit valley chair digital group forward scrap answer boss opinion sock thought issue derive color survey track ritual ring"
+    },
+    {
+      "name": "val8",
+      "type": "local",
+      "mnemonic": "phone useful scrap dust language pave fresh addict bitter claim whisper correct alter family pepper tape desk review vital merit lemon warfare snack smoke"
+    },
+    {
+      "name": "val9",
+      "type": "local",
+      "mnemonic": "symbol swarm grit glow inhale weasel crop boring meat dust physical salad update isolate vacuum water broccoli swallow student drop regular eye butter win"
+    },
+    {
+      "name": "val10",
+      "type": "local",
+      "mnemonic": "poverty hybrid achieve oyster supply page under flame target hockey second observe relax satisfy aunt citizen rifle patrol use crush gospel amused swarm rate"
+    }
+  ],
+  "keys": [
+    {
+      "name": "test1",
+      "type": "local",
+      "mnemonic": "opinion knife other balcony surge more bamboo canoe romance ask argue teach anxiety adjust spike mystery wolf alone torch tail six decide wash alley"
+    },
+    {
+      "name": "test2",
+      "type": "local",
+      "mnemonic": "action world crunch carry wage federal warm young prosper decade feed word indicate plate media rotate travel wine february fan mechanic hedgehog wise number"
+    },
+    {
+      "name": "test3",
+      "type": "local",
+      "mnemonic": "phone useful scrap dust language pave fresh addict bitter claim whisper correct alter family pepper tape desk review vital merit lemon warfare snack smoke"
+    },
+    {
+      "name": "test4",
+      "type": "local",
+      "mnemonic": "symbol swarm grit glow inhale weasel crop boring meat dust physical salad update isolate vacuum water broccoli swallow student drop regular eye butter win"
+    },
+    {
+      "name": "test5",
+      "type": "local",
+      "mnemonic": "poverty hybrid achieve oyster supply page under flame target hockey second observe relax satisfy aunt citizen rifle patrol use crush gospel amused swarm rate"
+    },
+    {
+      "name": "test6",
+      "type": "local",
+      "mnemonic": "youth gift where between bid dose gentle seek welcome dolphin zero clump move warm weapon race target consider myself marriage range reveal diesel chase"
+    },
+    {
+      "name": "test7",
+      "type": "local",
+      "mnemonic": "phone useful scrap dust language pave fresh addict bitter claim whisper correct alter family pepper tape desk review vital merit lemon warfare snack smoke"
+    },
+    {
+      "name": "test8",
+      "type": "local",
+      "mnemonic": "refuse rich mosquito help grace meat casino web order segment open grain cup awake steak collect kind valid pyramid excess other awesome few search"
+    },
+    {
+      "name": "test9",
+      "type": "local",
+      "mnemonic": "symbol swarm grit glow inhale weasel crop boring meat dust physical salad update isolate vacuum water broccoli swallow student drop regular eye butter win"
+    },
+    {
+      "name": "test10",
+      "type": "local",
+      "mnemonic": "poverty hybrid achieve oyster supply page under flame target hockey second observe relax satisfy aunt citizen rifle patrol use crush gospel amused swarm rate"
+    }
+  ]
+}

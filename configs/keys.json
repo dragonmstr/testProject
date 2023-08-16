@@ -1,0 +1,48 @@
+{
+  "genesis": [
+    {
+      "name": "val0",
+      "type": "local",
+      "mnemonic": "invest sauce provide design educate mixture raise nest extend mix view buddy thank flip cash off purpose setup stairs apple bike tuna portion case"
+    }
+  ],
+  "validators": [
+    {
+      "name": "val1",
+      "type": "local",
+      "mnemonic": "action world crunch carry wage federal warm young prosper decade feed word indicate plate media rotate travel wine february fan mechanic hedgehog wise number"
+    },
+    {
+      "name": "val2",
+      "type": "local",
+      "mnemonic": "invest sauce provide design educate mixture raise nest extend mix view buddy thank flip cash off purpose setup stairs apple bike tuna portion case"
+    },
+    {
+      "name": "val3",
+      "type": "local",
+      "mnemonic": "poverty hybrid achieve oyster supply page under flame target hockey second observe relax satisfy aunt citizen rifle patrol use crush gospel amused swarm rate"
+    },
+    {
+      "name": "val4",
+      "type": "local",
+      "mnemonic": "symbol swarm grit glow inhale weasel crop boring meat dust physical salad update isolate vacuum water broccoli swallow student drop regular eye butter win"
+    }
+  ],
+  "keys": [
+    {
+      "name": "test1",
+      "type": "local",
+      "mnemonic": "invest sauce provide design educate mixture raise nest extend mix view buddy thank flip cash off purpose setup stairs apple bike tuna portion case"
+    },
+    {
+      "name": "test2",
+      "type": "local",
+      "mnemonic": "phone useful scrap dust language pave fresh addict bitter claim whisper correct alter family pepper tape desk review vital merit lemon warfare snack smoke"
+    },
+    {
+      "name": "test3",
+      "type": "local",
+      "mnemonic": "action world crunch carry wage federal warm young prosper decade feed word indicate plate media rotate travel wine february fan mechanic hedgehog wise number"
+    }
+  ]
+}
